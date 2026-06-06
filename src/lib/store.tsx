@@ -52,6 +52,9 @@ interface AppState {
   boostBurn: (deltaKm: number) => void
   /** Increments every time a boost burn fires — AgentTerminal watches this. */
   boostCount: number
+  /** Increments every time a Δv budget is computed — AgentTerminal watches this. */
+  deltaVCount: number
+  triggerDeltaVLog: () => void
   conjunctions: ConjunctionAlert[]
   addConjunctionAlert: (alert: Omit<ConjunctionAlert, "id">) => void
   clearConjunctions: () => void
@@ -81,6 +84,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [satRaan, setSatRaan] = useState(0) // degrees
   const [satEccentricity, setSatEccentricity] = useState(0.0006) // ≈ circular LEO
   const [boostCount, setBoostCount] = useState(0)
+  const [deltaVCount, setDeltaVCount] = useState(0)
   const [conjunctions, setConjunctions] = useState<ConjunctionAlert[]>([])
   const nextAlertId = useRef(1)
 
@@ -115,6 +119,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (found) {
       setSelectedAsteroid(found)
     }
+  }, [])
+
+  const triggerDeltaVLog = useCallback(() => {
+    setDeltaVCount((c) => c + 1)
   }, [])
 
   const updateSatelliteParams = useCallback((alt: number, inc: number, raan: number) => {
@@ -197,6 +205,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         decayAltitude,
         boostBurn,
         boostCount,
+        deltaVCount,
+        triggerDeltaVLog,
         conjunctions,
         addConjunctionAlert,
         clearConjunctions,

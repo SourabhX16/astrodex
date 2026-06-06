@@ -22,6 +22,7 @@ import { useAppState } from "@/lib/store"
   ]
 
   const BOOST_LOG = (km: number) => `[MANV] Boost burn executed — +${km} km altitude restored (ISS)`
+  const DV_LOG = (dv: string) => `[MANV] Δv budget computed — Hohmann transfer: ${dv} m/s required`
 
 function getTimestamp() {
   return new Date().toLocaleTimeString("en-US", {
@@ -33,11 +34,12 @@ function getTimestamp() {
 }
 
 export function AgentTerminal() {
-  const { terminalExpanded, toggleTerminal, boostCount } = useAppState()
+  const { terminalExpanded, toggleTerminal, boostCount, deltaVCount } = useAppState()
   const [logs, setLogs] = useState<Array<{ time: string; msg: string }>>([])
   const scrollRef = useRef<HTMLDivElement>(null)
   const indexRef = useRef(3)
   const lastBoostSeen = useRef(boostCount)
+  const lastDvSeen = useRef(deltaVCount)
 
   // Initialize logs and start interval on client side only to prevent hydration mismatch
   useEffect(() => {
@@ -73,6 +75,18 @@ export function AgentTerminal() {
       })
     }
   }, [boostCount])
+
+  // Append a log line whenever Δv budget is computed
+  useEffect(() => {
+    if (deltaVCount !== lastDvSeen.current) {
+      lastDvSeen.current = deltaVCount
+      setLogs((prev) => {
+        const next = [...prev, { time: getTimestamp(), msg: DV_LOG("N/A") }]
+        if (next.length > 50) next.splice(0, next.length - 50)
+        return next
+      })
+    }
+  }, [deltaVCount])
 
   // Auto-scroll to bottom
   useEffect(() => {
