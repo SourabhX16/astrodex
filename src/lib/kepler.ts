@@ -126,3 +126,28 @@ export function velocityToKmPerSec(sceneV: number): number {
 export const LEO_DECAY_KM_PER_SEC = 0.05
 
 export const KM_PER_UNIT_CONST = KM_PER_UNIT
+
+/**
+ * Calculate the total delta-V (km/s) required for a Hohmann transfer between
+ * two coplanar circular orbits around Earth.
+ *
+ * A Hohmann transfer is a two-impulse elliptical transfer:
+ *   1. First burn at perigee of transfer ellipse (r₁) to raise apogee to r₂.
+ *   2. Second burn at apogee of transfer ellipse (r₂) to circularise.
+ *
+ * @param r1Km Initial circular orbit radius in km.
+ * @param r2Km Target circular orbit radius in km.
+ * @returns Total Δv in km/s.
+ */
+export function hohmannDeltaVKmPerSec(r1Km: number, r2Km: number): number {
+  if (r1Km <= 0 || r2Km <= 0) return 0
+  const mu = MU_EARTH_KM
+  const v1 = Math.sqrt(mu / r1Km)
+  const v2 = Math.sqrt(mu / r2Km)
+  const aTransfer = (r1Km + r2Km) / 2
+  const vPerigee = Math.sqrt(mu * (2 / r1Km - 1 / aTransfer))
+  const vApogee = Math.sqrt(mu * (2 / r2Km - 1 / aTransfer))
+  const dV1 = Math.abs(vPerigee - v1)
+  const dV2 = Math.abs(v2 - vApogee)
+  return dV1 + dV2
+}

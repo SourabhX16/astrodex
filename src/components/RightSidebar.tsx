@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { useAppState, LEO_LIMITS } from "@/lib/store"
-import { visVivaKmPerSec, LEO_DECAY_KM_PER_SEC } from "@/lib/kepler"
+import { visVivaKmPerSec, LEO_DECAY_KM_PER_SEC, hohmannDeltaVKmPerSec, KM_PER_UNIT_CONST } from "@/lib/kepler"
 
 export function RightSidebar() {
   const {
@@ -15,6 +15,8 @@ export function RightSidebar() {
     updateSatelliteParams,
     updateSatelliteEccentricity,
     boostBurn,
+    selectedAsteroid,
+    triggerDeltaVLog,
   } = useAppState()
 
   const [maxDv, setMaxDv] = useState("0.35")
@@ -29,11 +31,35 @@ export function RightSidebar() {
   const [boostStatus, setBoostStatus] = useState("")
 
   const handleApply = () => {
+    const maxDvVal = parseFloat(maxDv) || 0.35
+    const maxBurnsVal = parseInt(maxBurns, 10) || 1
+
+    const R_EARTH_KM = 6378
+    const r1Km = R_EARTH_KM + satAltitude
+
+    let dVTotal = 0
+    let targetName = "no target"
+
+    if (selectedAsteroid) {
+      targetName = selectedAsteroid.name
+      const r2Km = selectedAsteroid.orbitRadius * KM_PER_UNIT_CONST
+      dVTotal = hohmannDeltaVKmPerSec(r1Km, r2Km)
+    }
+
+    const dVms = dVTotal * 1000
+    const exceeds = dVms > maxDvVal
+    const icon = exceeds ? "⚠" : "✓"
+
     setStatusText(
-      "Applied constraints at " +
-        new Date().toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true })
+      `${icon} Hohmann Δv: ${dVms.toFixed(1)} m/s → ${targetName} ` +
+        (exceeds ? `WARNING: exceeds max ${maxDvVal} m/s!` : `within ${maxDvVal} m/s budget (${maxBurnsVal} burns)`)
     )
-    setTimeout(() => setStatusText("No pending changes."), 3000)
+
+    // Log to console for debugging
+    console.log(`[MANV] Hohmann transfer to ${targetName}: Δv=${dVms.toFixed(2)} m/s, max=${maxDvVal} m/s, burns=${maxBurnsVal}`)
+    triggerDeltaVLog()
+
+    setTimeout(() => setStatusText("No pending changes."), 5000)
   }
 
   // Theoretical LEO orbital speed via Vis-Viva (a = R⊕ + h)
