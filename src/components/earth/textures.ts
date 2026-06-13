@@ -101,35 +101,88 @@ export function createProceduralNightTexture(): HTMLCanvasElement {
   const w = canvas.width
   const h = canvas.height
 
-  ctx.fillStyle = "#000510"
+  ctx.fillStyle = "#000408"
   ctx.fillRect(0, 0, w, h)
 
-  // City clusters
+  // ── Urban center clusters with realistic distribution ──
+  // Sodium-yellow base: R=255, G=160±30, B=40±20 for warm city glow
+  const cityColor = (bright: number) => `rgba(255, ${150 + Math.floor(Math.random() * 40)}, ${30 + Math.floor(Math.random() * 30)}, ${bright})`
+
   const cities = [
-    // US East Coast
-    { x: 0.22, y: 0.38, r: 60 },
-    // US West Coast
-    { x: 0.16, y: 0.36, r: 40 },
-    // Europe
-    { x: 0.48, y: 0.34, r: 50 },
-    // UK
-    { x: 0.46, y: 0.30, r: 25 },
-    // Japan
-    { x: 0.78, y: 0.36, r: 40 },
-    // China coast
-    { x: 0.72, y: 0.34, r: 50 },
-    // India
-    { x: 0.63, y: 0.4, r: 35 },
+    // North America East Coast (dense megalopolis)
+    { x: 0.22, y: 0.37, r: 70 },
+    // US West Coast (LA–SF corridor)
+    { x: 0.15, y: 0.35, r: 50 },
+    // Mexico City
+    { x: 0.18, y: 0.44, r: 30 },
+    // Chicago / Great Lakes
+    { x: 0.20, y: 0.32, r: 30 },
+    // Houston / Dallas
+    { x: 0.17, y: 0.40, r: 25 },
+
+    // Europe — dense
+    { x: 0.47, y: 0.33, r: 55 },
+    // London / UK
+    { x: 0.45, y: 0.29, r: 30 },
+    // Scandinavia
+    { x: 0.50, y: 0.24, r: 25 },
+    // Iberia
+    { x: 0.44, y: 0.38, r: 25 },
+    // Italy / Mediterranean
+    { x: 0.49, y: 0.38, r: 28 },
+
+    // East Asia — brightest
+    // Japan (Tokyo–Osaka)
+    { x: 0.78, y: 0.35, r: 45 },
+    // China east coast (Shanghai–Beijing–Guangzhou)
+    { x: 0.72, y: 0.33, r: 60 },
+    // Korea
+    { x: 0.77, y: 0.31, r: 25 },
+    // Taiwan
+    { x: 0.75, y: 0.40, r: 20 },
+
+    // South Asia
+    // India (Delhi–Mumbai–Kolkata)
+    { x: 0.63, y: 0.42, r: 50 },
+    // Bangladesh
+    { x: 0.67, y: 0.43, r: 20 },
+
     // SE Asia
-    { x: 0.74, y: 0.44, r: 30 },
-    // Brazil coast
-    { x: 0.3, y: 0.58, r: 40 },
-    // Australia east
-    { x: 0.84, y: 0.58, r: 30 },
-    // Middle East
-    { x: 0.55, y: 0.4, r: 25 },
-    // South Africa
-    { x: 0.52, y: 0.58, r: 20 },
+    // Jakarta / Singapore
+    { x: 0.74, y: 0.48, r: 28 },
+    // Bangkok / Vietnam
+    { x: 0.70, y: 0.46, r: 22 },
+    // Philippines
+    { x: 0.76, y: 0.46, r: 20 },
+
+    // South America
+    // Brazil (Rio–São Paulo)
+    { x: 0.30, y: 0.58, r: 45 },
+    // Argentina (Buenos Aires)
+    { x: 0.28, y: 0.65, r: 30 },
+    // Colombia / Venezuela
+    { x: 0.27, y: 0.50, r: 25 },
+
+    // Middle East / Gulf
+    { x: 0.55, y: 0.40, r: 30 },
+    // Iran
+    { x: 0.57, y: 0.35, r: 25 },
+    // Turkey
+    { x: 0.52, y: 0.37, r: 22 },
+
+    // Africa
+    // South Africa (Johannesburg)
+    { x: 0.52, y: 0.58, r: 25 },
+    // Egypt / Nile
+    { x: 0.52, y: 0.43, r: 22 },
+    // Nigeria / Gulf of Guinea
+    { x: 0.49, y: 0.50, r: 20 },
+
+    // Oceania
+    // Australia east (Sydney–Melbourne)
+    { x: 0.84, y: 0.60, r: 35 },
+    // Australia west (Perth)
+    { x: 0.78, y: 0.56, r: 18 },
   ]
 
   for (const city of cities) {
@@ -137,38 +190,66 @@ export function createProceduralNightTexture(): HTMLCanvasElement {
     const cy = city.y * h
     const r = city.r
 
-    for (let i = 0; i < 50; i++) {
+    // Urban core — dense concentration of bright lights
+    const density = r < 25 ? 30 : r < 40 ? 50 : 70
+    for (let i = 0; i < density; i++) {
+      const angle = Math.random() * Math.PI * 2
+      const dist = Math.random() * r * 0.4
+      const px = cx + Math.cos(angle) * dist
+      const py = cy + Math.sin(angle) * dist
+      const size = 1.5 + Math.random() * 3.5
+      const bright = 0.5 + Math.random() * 0.5
+      ctx.beginPath()
+      ctx.arc(px, py, size, 0, Math.PI * 2)
+      ctx.fillStyle = cityColor(bright)
+      ctx.fill()
+    }
+
+    // Suburban halo — sparser, dimmer
+    for (let i = 0; i < 40; i++) {
       const angle = Math.random() * Math.PI * 2
       const dist = Math.random() * r
       const px = cx + Math.cos(angle) * dist
       const py = cy + Math.sin(angle) * dist
-      const size = 1 + Math.random() * 3
-      const bright = 0.3 + Math.random() * 0.7
+      const size = 0.8 + Math.random() * 2
+      const bright = 0.2 + Math.random() * 0.4
       ctx.beginPath()
       ctx.arc(px, py, size, 0, Math.PI * 2)
-      ctx.fillStyle = `rgba(255, 200, 100, ${bright})`
+      ctx.fillStyle = cityColor(bright)
       ctx.fill()
     }
 
-    // City glow
-    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r * 2.5)
-    grad.addColorStop(0, `rgba(255, 180, 80, 0.15)`)
-    grad.addColorStop(0.5, `rgba(255, 150, 50, 0.05)`)
-    grad.addColorStop(1, `rgba(255, 100, 30, 0)`)
+    // Sodium-vapor city glow (warm amber-orange)
+    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r * 2.8)
+    grad.addColorStop(0, `rgba(255, ${160 + Math.floor(Math.random() * 30)}, ${40 + Math.floor(Math.random() * 30)}, 0.20)`)
+    grad.addColorStop(0.4, `rgba(255, 140, 40, 0.08)`)
+    grad.addColorStop(1, `rgba(255, 80, 20, 0)`)
     ctx.fillStyle = grad
     ctx.beginPath()
-    ctx.arc(cx, cy, r * 2.5, 0, Math.PI * 2)
+    ctx.arc(cx, cy, r * 2.8, 0, Math.PI * 2)
     ctx.fill()
   }
 
-  // Scattered lights
-  for (let i = 0; i < 400; i++) {
+  // Scattered rural lights (warm, dim)
+  for (let i = 0; i < 500; i++) {
     const x = Math.random() * w
     const y = Math.random() * h
-    const size = 0.5 + Math.random() * 1.5
+    const size = 0.4 + Math.random() * 1.2
     ctx.beginPath()
     ctx.arc(x, y, size, 0, Math.PI * 2)
-    ctx.fillStyle = `rgba(255, 200, 80, ${0.1 + Math.random() * 0.3})`
+    const bright = 0.05 + Math.random() * 0.2
+    ctx.fillStyle = `rgba(255, ${170 + Math.floor(Math.random() * 50)}, ${50 + Math.floor(Math.random() * 40)}, ${bright})`
+    ctx.fill()
+  }
+
+  // Fishing fleet lights (coastal, slightly blue-white tint)
+  for (let i = 0; i < 120; i++) {
+    const x = Math.random() * w
+    const y = Math.random() * h
+    const size = 0.3 + Math.random() * 0.8
+    ctx.beginPath()
+    ctx.arc(x, y, size, 0, Math.PI * 2)
+    ctx.fillStyle = `rgba(200, 220, 255, ${0.03 + Math.random() * 0.08})`
     ctx.fill()
   }
 
