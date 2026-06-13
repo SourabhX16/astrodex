@@ -1,125 +1,161 @@
 # AstroDex — Space Objects & Debris Explorer
-link : https://astrodex-nine.vercel.app/
 
-**AstroDex** is an interactive, open-source 3D space situational awareness (SSA) dashboard and command center. It visualizes natural asteroids alongside man-made orbital space debris, tracking conjunction threats (close approaches) with active satellites in real-time.
+[Live demo](https://astrodex-nine.vercel.app/) · [Report a bug](https://github.com/SourabhX16/astrodex/issues/new/choose) · [Contributing guide](CONTRIBUTING.md)
 
-Built with **Next.js 16 (App Router)**, **React Three Fiber (R3F)**, **Three.js**, custom GLSL shaders, and a premium glassmorphic HUD design.
+AstroDex is an interactive, open-source 3D space situational awareness (SSA) dashboard and command center. It visualizes natural asteroids alongside human-made orbital debris, tracks conjunction threats with active satellites in real time, and presents mission telemetry in a cinematic glassmorphic HUD.
 
----
+Built with **Next.js 16 (App Router)**, **React 19**, **React Three Fiber**, **Three.js**, custom GLSL shaders, and Tailwind CSS v4.
 
-## 🌌 Core Features
+## Screenshots
 
-- **Multi-Object Catalog Tracking**:
-  - **400 Rocky Asteroids (Natural)**: Rendered in grey-brown rock textures, each on its own random elliptical orbit (`e ∈ [0, 0.28)`).
-  - **200 Space Debris Pieces (Man-made)**: Spent rocket stages, dead satellites, and metallic fragments orbiting closer to Earth, rendered in high-visibility neon colors (orange, cyan, magenta).
-- **True Keplerian Orbital Mechanics**:
-  - Every object (asteroids, debris, and the 3 satellites) is propagated by solving **Kepler's Equation** `M = E − e·sin(E)` with a Newton-Raphson solver in `src/lib/kepler.ts`.
-  - Per-frame **Vis-Viva** speed `v = √(μ·(2/r − 1/a))` — objects accelerate at perigee and decelerate at apogee.
-  - Orbit-line geometries are drawn as true ellipses sweeping eccentric anomaly, not circles.
-- **LEO Orbital Decay & Boost Burn**:
-  - The ISS altitude continuously drops from atmospheric drag (`0.05 km/s` of real time, clamped to 180 km re-entry floor / 500 km ceiling).
-  - The Right Sidebar **LEO Decay Monitor** shows a green → amber → red health bar plus the current altitude and drag rate.
-  - Clicking **Boost Burn (+50 km)** injects Δv that restores the orbit; the boost is logged to the Agent Terminal.
-  - As the ISS decays the orbit ring visibly shrinks and conjunction risks with debris rise.
-- **Interactive Satellite System**:
-  - Renders 3D orbital planes for active satellites: **ISS (ZARYA)**, **Envisat (Polar)**, and **Hubble Space Telescope**.
-  - Satellites move along realistic inclined Keplerian trajectories.
-- **Real-Time Conjunction Alerting**:
-  - Performs live 3D collision detection between satellites and the orbital catalog.
-  - Triggers alerts inside the **Conjunction Alerter** panel and log notifications in the **Agent Terminal** if a space object approaches within critical distance.
-  - Highlights at-risk objects in the 3D viewport by flashing their colors to a pulsing red indicator.
-- **Dynamic Orbital Telemetry controls**:
-  - The Right Sidebar's **Manual Satellite (3D Orbit)** panel is fully functional. Update parameters (Altitude, Inclination, RAAN, Eccentricity) and click **Apply Trajectory** to watch the ISS satellite and its elliptical orbit trail dynamically recalculate and warp in 3D in real-time.
-- **Cinematic Earth Shader**:
-  - Custom GLSL material blending Earth day/night textures dynamically based on sun angle, highlighting glowing cities, ocean specular reflections, a twilight terminator ring, and atmospheric Rayleigh scattering effects.
-- **Agent Terminal**:
-  - Expandable bottom terminal dock generating monospace logs of sensor sweeps, conjunction alerts, and maneuver sequences (including boost burns).
+The live demo is available at <https://astrodex-nine.vercel.app/>. If you are contributing visual changes, attach before/after screenshots or a short screen recording to your pull request.
 
----
+Suggested screenshot set for maintainers:
 
-## 🛠️ Tech Stack
+- Main 3D viewport with Earth, asteroids, debris, and HUD panels.
+- Target inspection mode with an object selected.
+- Conjunction alert and Agent Terminal activity.
+- Manual satellite controls and LEO decay monitor.
+
+## Core features
+
+- **Multi-object catalog tracking**
+  - 400 rocky asteroids rendered with grey-brown procedural materials.
+  - 200 human-made debris pieces rendered with high-visibility neon colors.
+- **True Keplerian orbital mechanics**
+  - Objects are propagated by solving Kepler's equation in `src/lib/kepler.ts`.
+  - Per-frame Vis-Viva speed updates make objects accelerate at perigee and decelerate at apogee.
+  - Orbit-line geometries are true ellipses instead of simple circular paths.
+- **LEO orbital decay and boost burns**
+  - ISS altitude decays over time and can be restored with a boost burn.
+  - The Right Sidebar shows altitude, drag rate, and orbit health.
+- **Interactive satellite system**
+  - Renders ISS, Envisat, and Hubble Space Telescope on inclined Keplerian trajectories.
+- **Real-time conjunction alerting**
+  - Detects close approaches between satellites and catalog objects.
+  - Logs alerts in the Agent Terminal and highlights risky objects in the viewport.
+- **Dynamic orbital telemetry controls**
+  - Update altitude, inclination, RAAN, and eccentricity, then apply the trajectory live.
+- **Cinematic Earth shader**
+  - Procedural day/night texture blending, city lights, ocean highlights, and atmospheric glow.
+- **Agent Terminal**
+  - Expandable mission log for sensor sweeps, conjunction alerts, and maneuver events.
+
+## Tech stack
 
 | Layer | Technology |
-|---|---|
-| Framework | Next.js 16 (App Router, Turbopack) |
+| --- | --- |
+| Framework | Next.js 16 App Router, Turbopack |
 | Language | TypeScript |
-| Styling | Vanilla CSS Custom Tokens & Tailwind CSS v4 |
-| 3D Graphics | Three.js r184 / React Three Fiber v9 |
-| 3D Helpers | @react-three/drei v10 |
-| Post-Processing | @react-three/postprocessing v3 (Bloom, Vignette) |
+| UI | React 19, Tailwind CSS v4, CSS custom properties |
+| 3D rendering | Three.js r184, React Three Fiber v9 |
+| 3D helpers | `@react-three/drei` v10 |
+| Post-processing | `@react-three/postprocessing` v3 |
+| Linting | ESLint 9, `eslint-config-next` |
 
----
+## Prerequisites
 
-## 🚀 Getting Started
+- Node.js 20 or newer is recommended for Next.js 16.
+- npm, included with Node.js.
+- A modern browser with WebGL support.
 
-Ensure you have Node.js 18+ installed.
+## Local development
 
 ```bash
-# Clone the repository
-git clone https://github.com/your-username/astrodex.git
+# Clone your fork
+git clone https://github.com/<your-username>/astrodex.git
 cd astrodex
 
 # Install dependencies
 npm install
 
-# Start the dev server
+# Start the development server
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open <http://localhost:3000> in your browser.
 
-### Building for production
+## Available scripts
 
 ```bash
-# Compile and check TypeScript
+npm run dev      # Start the local Next.js dev server
+npm run build    # Create a production build
+npm run start    # Serve the production build locally
+npm run lint     # Run ESLint
+```
+
+## Build and deployment
+
+Create a production build before deploying:
+
+```bash
 npm run build
-
-# Start the production build locally
-npm run start
 ```
 
----
+The project is a standard Next.js application and can be deployed to Vercel or any platform that supports Next.js. For Vercel, import the repository and keep the default Next.js build settings.
 
-## 📂 Project Structure
+## Testing and validation
 
+There is no dedicated test suite yet. Before opening a pull request, run:
+
+```bash
+npm run lint
+npm run build
 ```
+
+For UI or 3D changes, also verify the feature manually in the browser and include screenshots or a short recording in the PR.
+
+## Project structure
+
+```text
 src/
 ├── app/
 │   ├── globals.css          # Mission Control theme tokens, glassmorphism, animations
-│   ├── layout.tsx           # Font loading (Geist & JetBrains Mono), SEO metadata
+│   ├── layout.tsx           # Font loading and metadata
 │   └── page.tsx             # HUD overlay layout assembly
 ├── components/
 │   ├── earth/
 │   │   ├── Earth.tsx        # Earth day/night custom GLSL shader
 │   │   ├── CloudLayer.tsx   # Procedural cloud layer
 │   │   ├── Atmosphere.tsx   # Atmosphere scattering shader glow
-│   │   └── textures.ts     # Canvas 2D texture generators (zero external assets)
-│   ├── AsteroidField.tsx    # Dual InstancedMesh (Asteroids & Space Debris) — Keplerian
-│   ├── SatelliteSystem.tsx  # ISS/Envisat/Hubble + LEO decay
+│   │   └── textures.ts      # Canvas 2D texture generators
+│   ├── AsteroidField.tsx    # Instanced asteroids and debris with Keplerian motion
+│   ├── SatelliteSystem.tsx  # ISS/Envisat/Hubble and LEO decay
 │   ├── CameraController.tsx # Tracking camera controller
-│   ├── Effects.tsx          # Post-processing composer (Bloom, Vignette)
-│   ├── Scene.tsx            # Orchestrator canvas
+│   ├── Effects.tsx          # Post-processing composer
+│   ├── Scene.tsx            # 3D scene orchestrator
 │   ├── Header.tsx           # Simulation top navigation bar
 │   ├── LeftSidebar.tsx      # Target tracking, load by ID, conjunction feed
-│   ├── RightSidebar.tsx     # Orbital constraints + manual satellite + LEO decay monitor
-│   ├── AgentTerminal.tsx    # Expandable log dock (auto-scrolls, color-coded)
+│   ├── RightSidebar.tsx     # Orbital controls and LEO decay monitor
+│   ├── AgentTerminal.tsx    # Expandable auto-scrolling log dock
 │   └── AsteroidCard.tsx     # Inspector overlay panel
 └── lib/
-    ├── kepler.ts            # Newton-Raphson solver, Vis-Viva, mean motion, decay
-    ├── store.tsx            # React state manager (filters, simulation, orbits, alerts)
-    └── types.ts             # TypeScript definitions
+    ├── kepler.ts            # Orbital math utilities
+    ├── store.tsx            # React state manager
+    └── types.ts             # Shared TypeScript types
 ```
 
----
+## Contributing
 
-## 🤝 Contributing & GitHub Issues
+Contributions are welcome. Start with the existing [contributing guide](CONTRIBUTING.md), then follow this workflow:
 
-This is an open-source project! We want to make it easy for developers to contribute. We have created a curated list of **10 open issues** ranging from easy UI tasks to advanced orbital mechanic calculators.
+1. Pick an open issue or create one describing the change.
+2. Fork the repository and create a focused branch.
+3. Keep the PR limited to one logical change.
+4. Run `npm run lint` and `npm run build`.
+5. Open a pull request with:
+   - The issue number it closes or relates to.
+   - A concise summary of the change.
+   - Validation steps and screenshots for UI changes.
 
-Check out the full issue specifications in [src/github_issues.md](file:///Users/sourabhpatne16/Desktop/AstroDex/src/github_issues.md) to pick an issue, paste it onto GitHub, and start coding!
+### Coding style
 
----
+- Keep 3D components client-side and avoid server-rendering Three.js code.
+- Reuse orbital helpers from `src/lib/kepler.ts` instead of duplicating orbital math.
+- Avoid allocations inside `useFrame` render loops; reuse module-level scratch objects.
+- Prefer small, readable TypeScript changes with explicit types for shared data structures.
+- Run ESLint before submitting.
 
-## 📄 License
+## License
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
